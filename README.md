@@ -31,6 +31,18 @@ npm install level --save
 npm install hapi --save
 ```
 
+- Install bitcoinjs-message with --save flag
+```
+
+npm i bitcoinjs-message --save
+```
+
+- Install bitcoinjs-lib with --save flag
+```
+
+npm install bitcoinjs-lib --save
+```
+
 ### Start the Server
 
 * Open a console an navigate to the server project root folder:

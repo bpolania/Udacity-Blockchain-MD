@@ -54,7 +54,6 @@ class Blockchain{
 
   }
 
-
   // Add new block
   addBlock(data){
 		var newBlock = new Block(data);
@@ -109,7 +108,6 @@ class Blockchain{
 			} else {
 				callback(height);
 			}
-
 		})
   }
 
@@ -182,14 +180,3 @@ class Blockchain{
 }
 
 module.exports = Blockchain;
-
-	// var chain = new Blockchain();
-	// chain.addBlock(new Block("Just Another Block"))
-	// chain.validateBlock(0,function(result, blockHeight, blockHash, validBlockHash){
-	// 	if (result) {
-	// 		console.log('Block #'+blockHeight+' valid hash:\n'+blockHash+'<>'+validBlockHash);
-	// 	} else {
-	// 		console.log('Block #'+blockHeight+' invalid hash:\n'+blockHash+'<>'+validBlockHash);
-	// 	}
-	// })
-	// chain.validateChain()

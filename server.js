@@ -1,6 +1,7 @@
 'use strict';
 
 const Blockchain = require('./simpleChain.js');
+var Id = require('./id.js');
 
 const Hapi = require('hapi');
 
@@ -34,21 +35,41 @@ server.route({
     }
 });
 
-server.route( {
-
+server.route({
     path: '/block',
     method: 'POST',
     handler: ( request, reply ) => {
-
         // This is a ES6 standard
         console.log(request.payload.body);
         var chain = new Blockchain();
         chain.addBlock(request.payload.body);
         return null
-
     }
+});
 
-} );
+server.route({
+    path: '/requestValidation',
+    method: 'POST',
+    handler: ( request, reply ) => {
+        // This is a ES6 standard
+        var id = new Id.IdValidationRequest(request.payload.address,300);
+        var message = id.validateUserRequest();
+        console.log(message);
+        return message;
+    }
+});
+
+server.route({
+    path: '/message-signature/validate',
+    method: 'POST',
+    handler: ( request, reply ) => {
+        // This is a ES6 standard
+        var id = new Id.Validate();
+        id.validateMessage(request.payload.address,request.payload.signature);
+        // console.log(message);
+        return null;
+    }
+});
 
 const init = async () => {
 

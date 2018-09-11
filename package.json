@@ -4,14 +4,25 @@
   "description": "Udacity Project Submission",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
   },
   "author": "Boris Polania",
   "license": "ISC",
   "dependencies": {
+    "bitcoinjs-lib": "^4.0.1",
+    "bitcoinjs-message": "^2.0.0",
     "crypto-js": "^3.1.9-1",
-    "hapi": "^17.5.3",
+    "hapi": "^17.5.4",
     "level": "^4.0.0",
     "npm": "^6.3.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bpolania/Udacity-Blockchain-MD.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bpolania/Udacity-Blockchain-MD/issues"
+  },
+  "homepage": "https://github.com/bpolania/Udacity-Blockchain-MD#readme"
 }
