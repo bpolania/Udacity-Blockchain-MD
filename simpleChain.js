@@ -17,6 +17,7 @@ class Block{
      this.hash = "",
      this.height = 0,
      this.body = data,
+		 this.address = "";
      this.time = 0,
      this.previousBlockHash = ""
     }
@@ -68,6 +69,7 @@ class Blockchain{
 			newBlock.height = newHeight;
 			// UTC timestamp
 			newBlock.time = new Date().getTime().toString().slice(0,-3);
+			newBlock.address = data.address;
 			console.log(newHeight);
 			// previous block hash
 			if(newHeight>0){
@@ -111,7 +113,7 @@ class Blockchain{
 		})
   }
 
-	// get block
+	// get block by height
 	getBlock(blockHeight, callback){
 		// return object as a single string
 		db.get(blockHeight.toString(), function (err, block) {
@@ -124,6 +126,49 @@ class Blockchain{
 
 		})
 	}
+
+	// get block by address
+	getBlockByAddress(address, callback){
+		db.createReadStream()
+			  .on('data', function (data) {
+			    console.log(data.key, '=', data.value)
+					if (data.value.address == address) {
+						return data.value;
+					}
+			  })
+			  .on('error', function (err) {
+			    console.log('Oh my!', err)
+			  })
+			  .on('close', function () {
+			    console.log('Stream closed')
+			  })
+			  .on('end', function () {
+			    console.log('Stream ended')
+					return null;
+			  })
+	}
+
+	// get block by hash
+	getBlockByHash(hash, callback){
+		db.createReadStream()
+			  .on('data', function (data) {
+			    console.log(data.key, '=', data.value)
+					if (data.value.hash == hash) {
+						return data.value;
+					}
+			  })
+			  .on('error', function (err) {
+			    console.log('Oh my!', err)
+			  })
+			  .on('close', function () {
+			    console.log('Stream closed')
+			  })
+			  .on('end', function () {
+			    console.log('Stream ended')
+					return null;
+			  })
+	}
+
 	// validate block
 	validateBlock(blockHeight, callback){
 		// get block object

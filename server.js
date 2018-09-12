@@ -10,11 +10,17 @@ const server = Hapi.server({
     host: 'localhost'
 });
 
+class BlockData {
+  constructor(address,star) {
+    this.adddress = address,
+    this.star = star
+  }
+}
+
 server.route({
     method: 'GET',
     path: '/',
     handler: (request, h) => {
-
         return 'Hello, world!';
     }
 });
@@ -36,13 +42,47 @@ server.route({
 });
 
 server.route({
+    method: 'GET',
+    path: '/stars/address:{address}',
+    handler: async function (request, h)  {
+        const promise = new Promise((resolve, reject) => {
+          if (request.params.name != 'favicon.ico') {
+            var chain = new Blockchain();
+            chain.getBlockByAddress(request.params.address, function(block){
+              resolve(block);
+            })
+          }
+        });
+        return promise;
+    }
+});
+
+server.route({
+    method: 'GET',
+    path: '/stars/hash:{hash}',
+    handler: async function (request, h)  {
+        const promise = new Promise((resolve, reject) => {
+          if (request.params.name != 'favicon.ico') {
+            var chain = new Blockchain();
+            chain.getBlockByHash(request.params.hash, function(block){
+              resolve(block);
+            })
+          }
+        });
+        return promise;
+    }
+});
+
+server.route({
     path: '/block',
     method: 'POST',
     handler: ( request, reply ) => {
         // This is a ES6 standard
-        console.log(request.payload.body);
+        console.log(request.payload.address);
+        console.log(request.payload.star);
+        var data = new BlockData(request.payload.address,request.payload.star);
         var chain = new Blockchain();
-        chain.addBlock(request.payload.body);
+        chain.addBlock(data);
         return null
     }
 });
@@ -53,7 +93,7 @@ server.route({
     handler: ( request, reply ) => {
         // This is a ES6 standard
         var id = new Id.IdValidationRequest(request.payload.address,300);
-        var message = id.validateUserRequest();
+        var message = id.validateUserRequest(request.payload.address);
         console.log(message);
         return message;
     }
@@ -62,17 +102,21 @@ server.route({
 server.route({
     path: '/message-signature/validate',
     method: 'POST',
-    handler: ( request, reply ) => {
+    handler: async function ( request, reply ) {
         // This is a ES6 standard
-        var id = new Id.Validate();
-        id.validateMessage(request.payload.address,request.payload.signature);
-        // console.log(message);
-        return null;
+        const promise = new Promise((resolve, reject) => {
+          if (request.params.name != 'favicon.ico') {
+            var id = new Id.Validate();
+            id.validateMessage(request.payload.address,request.payload.signature, function(response){
+              resolve(response);
+            });
+          }
+        });
+        return promise;
     }
 });
 
 const init = async () => {
-
     await server.start();
     console.log(`Server running at: ${server.info.uri}`);
 };
