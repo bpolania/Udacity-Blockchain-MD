@@ -58,7 +58,7 @@ cd /path/to/server/Project_3_submission
 
 ## Testing webservices end-points
 
-- Get a block
+- Get a block by height
 
 Open a browser session and go to:
 
@@ -67,7 +67,29 @@ Open a browser session and go to:
 http://localhost:8000/block/{block_height}
 ```
 
-Where block height is the height of the block you wish to get.
+Where `block_height` is the height of the block you wish to get.
+
+- Get a block by address
+
+Open a browser session and go to:
+
+```
+
+http://localhost:8000/stars/address:{address}
+```
+
+Where `address` is the address of the block you wish to get.
+
+- Get a block by hash
+
+Open a browser session and go to:
+
+```
+
+http://localhost:8000/stars/hash:{hash}
+```
+
+Where `hash` is the hash of the block you wish to get.
 
 - Create a new block
 ```

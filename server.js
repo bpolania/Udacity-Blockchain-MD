@@ -27,12 +27,12 @@ server.route({
 
 server.route({
     method: 'GET',
-    path: '/{name}',
+    path: '/block/{height}',
     handler: async function (request, h)  {
         const promise = new Promise((resolve, reject) => {
           if (request.params.name != 'favicon.ico') {
             var chain = new Blockchain();
-            chain.getBlock(request.params.name, function(block){
+            chain.getBlock(request.params.height, function(block){
               resolve(block);
             })
           }
