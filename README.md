@@ -186,6 +186,57 @@ This is a sample response:
 }
 ```
 
+- Register a Star
+
+To validate an signature, you must do a `POST` request to the following endpoint:
+
+```
+http://localhost:8000/block
+```
+
+Withe the following header:
+
+```
+'Content-Type: application/json'
+```
+
+With the following body:
+
+```
+{
+  "address": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ",
+  "star": {
+    "dec": "-26° 29'\'' 24.9",
+    "ra": "16h 29m 1.0s",
+    "story": "Found star using https://www.google.com/sky/"
+  }
+```
+
+where `address` in the value of the address of the signature you need to validate, and `star` is the information of the star you need to register (this information can be found at https://www.google.com/sky/) please note that `story` can be any `string` value that should contain some historical information about the star in question, and declination (`dec`) and right ascension (`ra`) are required, but there are some optional values that can be added, magnitude (`magnitude`) and constellation(`constellation`), here is an example using `curl`:
+
+```
+curl -X "POST" "http://localhost:8000/block" -H 'Content-Type: application/json; charset=utf-8' -d $'{ "address": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ", "star": { "dec": "-26° 29'\'' 24.9", "ra": "16h 29m 1.0s", "story": "Found star using https://www.google.com/sky/"}}'
+```
+
+This is a sample response:
+
+```
+{
+  "hash": "a59e9e399bc17c2db32a7a87379a8012f2c8e08dd661d7c0a6a4845d4f3ffb9f",
+  "height": 1,
+  "body": {
+    "address": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ",
+    "star": {
+      "ra": "16h 29m 1.0s",
+      "dec": "-26° 29' 24.9",
+      "story": "466f756e642073746172207573696e672068747470733a2f2f7777772e676f6f676c652e636f6d2f736b792f"
+    }
+  },
+  "time": "1532296234",
+  "previousBlockHash": "49cce61ec3e6ae664514d5fa5722d86069cf981318fc303750ce66032d0acff3"
+}
+```
+
 ## Testing Blockchain (simpleChain.js)
 
 To test code:
