@@ -33,13 +33,11 @@ npm install hapi --save
 
 - Install bitcoinjs-message with --save flag
 ```
-
 npm i bitcoinjs-message --save
 ```
 
 - Install bitcoinjs-lib with --save flag
 ```
-
 npm install bitcoinjs-lib --save
 ```
 
@@ -48,7 +46,6 @@ npm install bitcoinjs-lib --save
 * Open a console an navigate to the server project root folder:
 
 ```
-
 cd /path/to/server/Project_3_submission
 ```
 
@@ -58,12 +55,31 @@ cd /path/to/server/Project_3_submission
 
 ## Testing webservices end-points
 
+- Create a new block
+
+To create a new block, you must do a `POST` request to the following endpoint:
+
+```
+http://localhost:8000/block
+```
+
+Withe the following header:
+
+```
+'Content-Type: application/json'
+```
+
+With any JSON value as a body, here is an example using `curl`:
+
+```
+curl -X "POST" "http://localhost:8000/block" -H 'Content-Type: application/json' -d $'{"body":"another block the dust"}'
+```
+
 - Get a block by height
 
 Open a browser session and go to:
 
 ```
-
 http://localhost:8000/block/{block_height}
 ```
 
@@ -74,7 +90,6 @@ Where `block_height` is the height of the block you wish to get.
 Open a browser session and go to:
 
 ```
-
 http://localhost:8000/stars/address:{address}
 ```
 
@@ -85,15 +100,90 @@ Where `address` is the address of the block you wish to get.
 Open a browser session and go to:
 
 ```
-
 http://localhost:8000/stars/hash:{hash}
 ```
 
 Where `hash` is the hash of the block you wish to get.
 
-- Create a new block
+- Request an user validation  
+
+To request an user validation an user, you must do a `POST` request to the following endpoint:
+
 ```
-curl -X "POST" "http://localhost:8000/block" -H 'Content-Type: application/json' -d $'{"body":"another block the dust"}'
+http://localhost:8000/requestValidation
+```
+
+Withe the following header:
+
+```
+'Content-Type: application/json'
+```
+
+With the following body:
+
+```
+{ "address": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ" }
+```
+
+where `address` in the value of the address of the user you need to validate, here is an example using `curl`:
+
+```
+curl -X "POST" "http://localhost:8000/requestValidation" -H 'Content-Type: application/json; charset=utf-8' -d $'{"address": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ"}'
+```
+
+This is a sample response:
+
+```
+{
+  "address": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ", // This is the address of the wallet
+  "requestTimeStamp": "1532296090", // the timestamp of the request
+  "message": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ:1532296090:starRegistry", // this is the message that needs to be signed
+  "validationWindow": 300 // expiration time of the request
+}
+```
+
+- Validate a signature  
+
+To validate an signature, you must do a `POST` request to the following endpoint:
+
+```
+http://localhost:8000/message-signature/validate
+```
+
+Withe the following header:
+
+```
+'Content-Type: application/json'
+```
+
+With the following body:
+
+```
+{
+  "address": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ",
+  "signature": "H6ZrGrF0Y4rMGBMRT2+hHWGbThTIyhBS0dNKQRov9Yg6GgXcHxtO9GJN4nwD2yNXpnXHTWU9i+qdw5vpsooryLU="
+}
+```
+
+where `address` in the value of the address of the signature you need to validate, and `signature` is the signature you need to validate, here is an example using `curl`:
+
+```
+curl -X "POST" "http://localhost:8000/message-signature/validate" -H 'Content-Type: application/json; charset=utf-8' -d $'{ "address": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ","signature": "H6ZrGrF0Y4rMGBMRT2+hHWGbThTIyhBS0dNKQRov9Yg6GgXcHxtO9GJN4nwD2yNXpnXHTWU9i+qdw5vpsooryLU="}'
+```
+
+This is a sample response:
+
+```
+{
+  "registerStar": true, // was the registration successful?
+  "status": {
+    "address": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ", // This is the address of the wallet
+    "requestTimeStamp": "1532296090", // the timestamp of the request
+    "message": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ:1532296090:starRegistry", // the signed messaged
+    "validationWindow": 193, // expiration time of the request
+    "messageSignature": "valid" // is the signature valid?
+  }
+}
 ```
 
 ## Testing Blockchain (simpleChain.js)
