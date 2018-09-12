@@ -55,7 +55,15 @@ cd /path/to/server/Project_3_submission
 
 ## Testing webservices end-points
 
-- Create a new block
+### Querying the blockchain
+
+To get the entire blockchain, you must do a `GET` request to the following endpoint:
+
+```
+http://localhost:8000/chain
+```
+
+### Create a new block
 
 To create a new block, you must do a `POST` request to the following endpoint:
 
@@ -75,7 +83,7 @@ With any JSON value as a body, here is an example using `curl`:
 curl -X "POST" "http://localhost:8000/block" -H 'Content-Type: application/json' -d $'{"body":"another block the dust"}'
 ```
 
-- Get a block by height
+### Get a block by height
 
 Open a browser session and go to:
 
@@ -85,7 +93,7 @@ http://localhost:8000/block/{block_height}
 
 Where `block_height` is the height of the block you wish to get.
 
-- Get a block by address
+### Get a block by address
 
 Open a browser session and go to:
 
@@ -95,7 +103,7 @@ http://localhost:8000/stars/address:{address}
 
 Where `address` is the address of the block you wish to get.
 
-- Get a block by hash
+### Get a block by hash
 
 Open a browser session and go to:
 
@@ -105,7 +113,7 @@ http://localhost:8000/stars/hash:{hash}
 
 Where `hash` is the hash of the block you wish to get.
 
-- Request an user validation  
+### Request an user validation  
 
 To request an user validation an user, you must do a `POST` request to the following endpoint:
 
@@ -142,7 +150,7 @@ This is a sample response:
 }
 ```
 
-- Validate a signature  
+### Validate a signature  
 
 To validate an signature, you must do a `POST` request to the following endpoint:
 
@@ -186,7 +194,7 @@ This is a sample response:
 }
 ```
 
-- Register a Star
+### Register a Star
 
 To validate an signature, you must do a `POST` request to the following endpoint:
 
@@ -212,7 +220,7 @@ With the following body:
   }
 ```
 
-where `address` in the value of the address of the signature you need to validate, and `star` is the information of the star you need to register (this information can be found at https://www.google.com/sky/) please note that `story` can be any `string` value that should contain some historical information about the star in question, and declination (`dec`) and right ascension (`ra`) are required, but there are some optional values that can be added, magnitude (`magnitude`) and constellation(`constellation`), here is an example using `curl`:
+where `address` in the value of the address of the signature you need to validate, and `star` is the information of the star you need to register (this information can be found at https://www.google.com/sky/) please note that `story` can be any `string` value that should contain some historical information about the star in question, and declination (`dec`) and right ascension (`ra`) are required, but there are two optional values that can be added, magnitude (`magnitude`) and constellation (`constellation`), here is an example using `curl`:
 
 ```
 curl -X "POST" "http://localhost:8000/block" -H 'Content-Type: application/json; charset=utf-8' -d $'{ "address": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ", "star": { "dec": "-26° 29'\'' 24.9", "ra": "16h 29m 1.0s", "story": "Found star using https://www.google.com/sky/"}}'

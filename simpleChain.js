@@ -32,30 +32,36 @@ class Blockchain{
     //this.chain = [];
 		// Initialize the block height in the database
 		var self = this;
+		this.blocks = [];
 		this.getBlockHeight(function(value) {
 			if (value == null) {
 				self.addBlock(new Block("First block in the chain - Genesis block"));
-			} else {
-				console.log("Good!, height: " + value);
-				db.createReadStream()
-				  .on('data', function (data) {
-				    console.log(data.key, '=', data.value)
-				  })
-				  .on('error', function (err) {
-				    console.log('Oh my!', err)
-				  })
-				  .on('close', function () {
-				    console.log('Stream closed')
-				  })
-				  .on('end', function () {
-				    console.log('Stream ended')
-				  })
 			}
 		})
 
   }
 
-  // Add new block
+	// returns all the blocks in the blockchain
+	getBlockchain(callback) {
+		var _this = this;
+		db.createReadStream()
+			.on('data', function (data) {
+				console.log(data.key, '=', data.value)
+				_this.blocks.push(data);
+			})
+			.on('error', function (err) {
+				console.log('Oh my!', err)
+			})
+			.on('close', function () {
+				console.log('Stream closed')
+			})
+			.on('end', function () {
+				console.log('Stream ended')
+				callback(_this.blocks)
+			})
+	}
+
+  // Adds new block to the blockchain
   addBlock(data){
 		var newBlock = new Block(data);
 		var _this = this;
@@ -101,7 +107,7 @@ class Blockchain{
 		});
   }
 
-	// Get block height
+	// Gets blockchain height
   getBlockHeight(callback){
 		// return this.chain.length-1;
 		db.get('height', function (err, height) {
@@ -113,7 +119,7 @@ class Blockchain{
 		})
   }
 
-	// get block by height
+	// gets a block by its height
 	getBlock(blockHeight, callback){
 		// return object as a single string
 		db.get(blockHeight.toString(), function (err, block) {
@@ -127,13 +133,19 @@ class Blockchain{
 		})
 	}
 
-	// get block by address
+	// gets all block that registered a star with a specific address
 	getBlockByAddress(address, callback){
+		var _this = this;
 		db.createReadStream()
 			  .on('data', function (data) {
-			    console.log(data.key, '=', data.value)
-					if (data.value.address == address) {
-						return data.value;
+					var json = JSON.parse(data.value);
+					var _address;
+					if (json.body != null) {
+						_address = json.body.address;
+					}
+					if (_address == address) {
+						console.log(_address,address)
+						_this.blocks.push(data.value);
 					}
 			  })
 			  .on('error', function (err) {
@@ -143,18 +155,19 @@ class Blockchain{
 			    console.log('Stream closed')
 			  })
 			  .on('end', function () {
-			    console.log('Stream ended')
-					return null;
+			    console.log('Stream ended');
+					callback(_this.blocks);
 			  })
 	}
 
-	// get block by hash
+	// gets a block by its hash
 	getBlockByHash(hash, callback){
 		db.createReadStream()
 			  .on('data', function (data) {
-			    console.log(data.key, '=', data.value)
-					if (data.value.hash == hash) {
-						return data.value;
+					var json = JSON.parse(data.value);
+					if (json.hash == hash) {
+						console.log(json.hash,hash)
+						callback(data.value);
 					}
 			  })
 			  .on('error', function (err) {
@@ -165,11 +178,11 @@ class Blockchain{
 			  })
 			  .on('end', function () {
 			    console.log('Stream ended')
-					return null;
+
 			  })
 	}
 
-	// validate block
+	// validates a block
 	validateBlock(blockHeight, callback){
 		// get block object
 		this.getBlock(blockHeight, function(block) {
@@ -190,7 +203,7 @@ class Blockchain{
 		});
 	}
 
-	// Validate blockchain
+	// Validates the blockchain
 	validateChain(root){
 		if (root == null) {
 			root = 0;
@@ -222,6 +235,28 @@ class Blockchain{
 				})
 			})
 		}
+
+		// Create JSON response object for requesting blocks with address (getBlockByAddress)
+		createBlockRequestResponse(data){
+
+
+
+		}
 }
 
+
+/* ===== Response Class ==============================
+|  Class with a constructor for response object 		  |
+|  ===============================================*/
+
+class Response{
+	constructor(data){
+     this.hash = "",
+     this.height = 0,
+     this.body = data.body,
+		 this.address = "";
+     this.time = 0,
+     this.previousBlockHash = ""
+    }
+}
 module.exports = Blockchain;

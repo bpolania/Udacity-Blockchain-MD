@@ -1,5 +1,7 @@
 const level = require('level')
 var db = level('./id')
+var bitcoin = require('bitcoinjs-lib')
+var bitcoinMessage = require('bitcoinjs-message')
 
   /* ===== IdValidationRequest Class ===============================
   |  Class with a constructor for an Id Validation Request			   |
@@ -14,7 +16,7 @@ var db = level('./id')
       this.message = Messages.createMessage(address,t);
       this.validationWindow = expiration;
     }
-
+    
     validateUserRequest(blockchainId) {
       db.put(blockchainId, this.requestTimeStamp, function (err) {
         if (err) return console.log('DB error: ', err) // some kind of I/O error
@@ -42,7 +44,7 @@ var db = level('./id')
           if (result) {
             var messageSignature = "valid";
           }
-          var status = new ValidateResponseStatus(address,timestamp,message,messageSignature);
+          var status = new ValidateResponseStatus(address,timestamp,message,messageSignature,300);
           var response = new ValidateResponse(result,status);
           console.log(message);
   				console.log(result);
@@ -68,11 +70,11 @@ var db = level('./id')
   |  =================================================================*/
 
   class ValidateResponseStatus {
-    constructor(address,timestamp,message,messageSignature) {
+    constructor(address,timestamp,message,messageSignature,expiration) {
       this.address = address,
       this.requestTimeStamp = timestamp,
       this.message = message,
-      this.validationWindow = 0,
+      this.validationWindow = expiration,
       this.messageSignature = messageSignature
     }
   }

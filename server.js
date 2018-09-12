@@ -12,16 +12,30 @@ const server = Hapi.server({
 
 class BlockData {
   constructor(address,star) {
-    this.adddress = address,
+    this.address = address,
     this.star = star
   }
 }
 
 server.route({
     method: 'GET',
-    path: '/',
-    handler: (request, h) => {
-        return 'Hello, world!';
+    path: '/chain',
+    handler: async function (request, h)  {
+        const promise = new Promise((resolve, reject) => {
+          if (request.params.name != 'favicon.ico') {
+            var chain = new Blockchain();
+            chain.getBlockchain(function(block){
+              resolve(block);
+            })
+          }
+        }).then(function(result) {
+          console.log(result); // "Stuff worked!"
+          return result;
+        }, function(err) {
+          console.log(err); // Error: "It broke"
+          return err;
+        });
+        return promise;
     }
 });
 
@@ -52,6 +66,12 @@ server.route({
               resolve(block);
             })
           }
+        }).then(function(result) {
+          console.log(result); // "Stuff worked!"
+          return result;
+        }, function(err) {
+          console.log(err); // Error: "It broke"
+          return err;
         });
         return promise;
     }
@@ -68,7 +88,13 @@ server.route({
               resolve(block);
             })
           }
-        });
+        }).then(function(result) {
+          console.log(result); // "Stuff worked!"
+          return result;
+        }, function(err) {
+          console.log(err); // Error: "It broke"
+          return err;
+        });;
         return promise;
     }
 });
