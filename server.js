@@ -94,7 +94,7 @@ server.route({
         }, function(err) {
           console.log(err); // Error: "It broke"
           return err;
-        });;
+        });
         return promise;
     }
 });
@@ -103,13 +103,25 @@ server.route({
     path: '/block',
     method: 'POST',
     handler: ( request, reply ) => {
-        // This is a ES6 standard
-        console.log(request.payload.address);
-        console.log(request.payload.star);
-        var data = new BlockData(request.payload.address,request.payload.star);
-        var chain = new Blockchain();
-        chain.addBlock(data);
-        return null
+      const promise = new Promise((resolve, reject) => {
+        if (request.params.name != 'favicon.ico') {
+          const encoded = new Buffer(request.payload.star.story).toString('hex');
+          var star = request.payload.star;
+          star.story = encoded;
+          var data = new BlockData(request.payload.address,star);
+          var chain = new Blockchain();
+          chain.addStar(data, function(block){
+            resolve(block);
+          })
+        }
+      }).then(function(result) {
+        console.log(result); // "Stuff worked!"
+        return result;
+      }, function(err) {
+        console.log(err); // Error: "It broke"
+        return err;
+      });
+      return promise;
     }
 });
 

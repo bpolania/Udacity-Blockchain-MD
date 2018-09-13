@@ -10,19 +10,22 @@ var bitcoinMessage = require('bitcoinjs-message')
   class IdValidationRequest {
   	constructor(address,expiration){
       var d = new Date();
-      var t = d.getTime()
+      var t = d.getTime();
       this.address = address;
       this.requestTimeStamp = t;
       this.message = Messages.createMessage(address,t);
       this.validationWindow = expiration;
+      this.status = -1;
     }
-    
+
     validateUserRequest(blockchainId) {
-      db.put(blockchainId, this.requestTimeStamp, function (err) {
+      console.log(JSON.stringify(this));
+      db.put(blockchainId, JSON.stringify(this), function (err) {
         if (err) return console.log('DB error: ', err) // some kind of I/O error
       })
-      return JSON.stringify(this);
+      return this;
     }
+
   }
 
   /* ===== Validate Class ===============================
@@ -31,27 +34,56 @@ var bitcoinMessage = require('bitcoinjs-message')
 
   class Validate {
     validateMessage(address,signature,callback) {
-      var address = address;
-      var signature = signature;
-      db.get(address, function (err, timestamp) {
+      db.get(address, function (err, data) {
   			if (err) {
           console.log(err);
   				console.log(bitcoinMessage.verify(message, address, signature))
   			} else {
-          var message = Messages.createMessage(address,timestamp);
+          var json = JSON.parse(data)
+          var message = Messages.createMessage(address,json.requestTimeStamp);
           var result = bitcoinMessage.verify(message, address, signature);
           var messageSignature = "invalid";
-          if (result) {
-            var messageSignature = "valid";
+          var d = new Date();
+          var currentTimeStamp = d.getTime();
+          var timeStampDiff = (currentTimeStamp - json.requestTimeStamp)/1000;
+          var validationWindow = json.validationWindow - timeStampDiff;
+          if (validationWindow > 0) {
+            messageSignature = "valid";
+            json.status = 0;
+          } else {
+            result = false;
+            validationWindow = 0;
           }
-          var status = new ValidateResponseStatus(address,timestamp,message,messageSignature,300);
+          db.put(address, JSON.stringify(json), function (err) {
+            if (err) return console.log('DB error: ', err) // some kind of I/O error
+          })
+          var status = new ValidateResponseStatus(address,json.requestTimeStamp,message,messageSignature,Math.round(validationWindow));
           var response = new ValidateResponse(result,status);
-          console.log(message);
-  				console.log(result);
-          callback(JSON.stringify(response));
+          callback(response);
   			}
   		})
     }
+
+    getValidation(address,callback) {
+      db.get(address, function (err, data) {
+  			if (err) {
+          console.log(err);
+  			} else {
+            callback(JSON.parse(data))
+  			}
+  		})
+    }
+
+    updateValidation(address,validation,callback) {
+      db.put(address, validation, function (err, data) {
+  			if (err) {
+          console.log(err);
+  			} else {
+          callback(true);
+        }
+  		})
+    }
+
   }
 
   /* ===== ValidateResponse Class ===============================

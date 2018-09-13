@@ -6,6 +6,7 @@ const SHA256 = require('crypto-js/sha256');
 const level = require('level')
 var db = level('./udacity')
 const util = require('util');
+var Id = require('./id.js');
 
 
 /* ===== Block Class ==============================
@@ -33,12 +34,6 @@ class Blockchain{
 		// Initialize the block height in the database
 		var self = this;
 		this.blocks = [];
-		this.getBlockHeight(function(value) {
-			if (value == null) {
-				self.addBlock(new Block("First block in the chain - Genesis block"));
-			}
-		})
-
   }
 
 	// returns all the blocks in the blockchain
@@ -47,7 +42,7 @@ class Blockchain{
 		db.createReadStream()
 			.on('data', function (data) {
 				console.log(data.key, '=', data.value)
-				_this.blocks.push(data);
+				_this.blocks.push(JSON.parse(data.value));
 			})
 			.on('error', function (err) {
 				console.log('Oh my!', err)
@@ -62,7 +57,7 @@ class Blockchain{
 	}
 
   // Adds new block to the blockchain
-  addBlock(data){
+  addBlock(data,callback){
 		var newBlock = new Block(data);
 		var _this = this;
 		this.getBlockHeight(function(height) {
@@ -88,6 +83,7 @@ class Blockchain{
 						if (err) return console.log('getBlockHeight Error: ', err) // some kind of I/O error
 						db.put(newHeight.toString(), JSON.stringify(newBlock), function (err) {
 							if (err) return console.log('Ooopsa!', err) // some kind of I/O error
+							callback(newBlock);
 						})
 					})
 				})
@@ -100,12 +96,31 @@ class Blockchain{
 					if (err) return console.log('getBlockHeight Error: ', err) // some kind of I/O error
 					db.put("0", JSON.stringify(newBlock), function (err) {
 						if (err) return console.log('Ooopsa!', err) // some kind of I/O error
+						callback(newBlock);
 					})
 				})
 			}
-
 		});
   }
+
+	// add a block with star information
+	addStar(data, callback) {
+		var _this = this;
+		var id = new Id.Validate();
+		id.getValidation(data.address, function(response) {
+			if (response.status == 0) {
+				response.status = 1;
+				id.updateValidation(data.address, JSON.stringify(response), function (response) {
+					_this.addBlock(data,function(block){
+						callback(block);
+					});
+				})
+			} else {
+				callback(JSON.parse("{ \"error\" : \"invalid request\"}"));
+			}
+		});
+		//
+	}
 
 	// Gets blockchain height
   getBlockHeight(callback){
@@ -145,7 +160,10 @@ class Blockchain{
 					}
 					if (_address == address) {
 						console.log(_address,address)
-						_this.blocks.push(data.value);
+						var block = JSON.parse(data.value);
+						const decoded = new Buffer(block.body.star.story, 'hex').toString();
+						block.body.star.storyDecoded = decoded;
+						_this.blocks.push(block);
 					}
 			  })
 			  .on('error', function (err) {
@@ -166,8 +184,10 @@ class Blockchain{
 			  .on('data', function (data) {
 					var json = JSON.parse(data.value);
 					if (json.hash == hash) {
-						console.log(json.hash,hash)
-						callback(data.value);
+						var block = JSON.parse(data.value);
+						const decoded = new Buffer(block.body.star.story, 'hex').toString();
+						block.body.star.storyDecoded = decoded;
+						callback(block);
 					}
 			  })
 			  .on('error', function (err) {
