@@ -18,14 +18,38 @@ var bitcoinMessage = require('bitcoinjs-message')
       this.status = -1;
     }
 
-    validateUserRequest(blockchainId) {
-      console.log(JSON.stringify(this));
-      db.put(blockchainId, JSON.stringify(this), function (err) {
-        if (err) return console.log('DB error: ', err) // some kind of I/O error
-      })
-      return this;
-    }
+    validateUserRequest(blockchainId, callback) {
+      var validate = new Validate();
+      var validation = this;
+      validate.getValidation(blockchainId, function(response) {
+        if (response != null) {
+          if (response.status == -1) {
+            var d = new Date();
+            var currentTimeStamp = d.getTime();
+            var timeStampDiff = (currentTimeStamp - response.requestTimeStamp)/1000;
+            var validationWindow = timeStampDiff - response.validationWindow;
+            if (validationWindow < 0) {
+              response.validationWindow = Math.floor(validationWindow * -1);
+            } else {
+              response.validationWindow  = 300;
+              response.requestTimeStamp = currentTimeStamp;
+            }
+            validation = response
+          }
+        }
+        var v = {};
+        v.address = validation.address;
+        v.requestTimeStamp = validation.requestTimeStamp;
+        v.message = validation.message;
+        v.validationWindow = 300;
+        v.status = -1;
+        db.put(blockchainId, JSON.stringify(v), function (err) {
+          if (err) return console.log('DB error: ', err) // some kind of I/O error
+          callback(validation);
+        })
 
+      })
+    }
   }
 
   /* ===== Validate Class ===============================
@@ -66,8 +90,9 @@ var bitcoinMessage = require('bitcoinjs-message')
 
     getValidation(address,callback) {
       db.get(address, function (err, data) {
-  			if (err) {
+        if (err) {
           console.log(err);
+          callback(null)
   			} else {
             callback(JSON.parse(data))
   			}

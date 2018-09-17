@@ -105,6 +105,15 @@ server.route({
     handler: ( request, reply ) => {
       const promise = new Promise((resolve, reject) => {
         if (request.params.name != 'favicon.ico') {
+          var verified = Messages.verifyStarData(request.payload);
+          if (!verified) {
+            resolve(JSON.parse("{ \"error\" : \"Bad request, some fields may be missing from your request\"}"));
+            return;
+          }
+          if(!Messages.ascii(request.payload.star.story)) {
+            resolve(JSON.parse("{ \"error\" : \"You tried to encode a non-ASCII string! I know, the project specs wasn't clear about this one (among many other things), but anyway you cannot do it, check your string and try again!\"}"));
+            return;
+          }
           const encoded = new Buffer(request.payload.star.story).toString('hex');
           var star = request.payload.star;
           star.story = encoded;
@@ -130,10 +139,22 @@ server.route({
     method: 'POST',
     handler: ( request, reply ) => {
         // This is a ES6 standard
-        var id = new Id.IdValidationRequest(request.payload.address,300);
-        var message = id.validateUserRequest(request.payload.address);
-        console.log(message);
-        return message;
+        const promise = new Promise((resolve, reject) => {
+          if (request.params.name != 'favicon.ico') {
+            var verified = Messages.verifyRequestValidation(request.payload);
+            if (!verified) {
+              resolve(JSON.parse("{ \"error\" : \"Bad request, address may be missing from your request\"}"));
+              return;
+            }
+            var id = new Id.IdValidationRequest(request.payload.address,300);
+            id.validateUserRequest(request.payload.address,function(response){
+              console.log(response);
+              resolve(response);
+            });
+
+          }
+        });
+        return promise;
     }
 });
 
@@ -144,6 +165,11 @@ server.route({
         // This is a ES6 standard
         const promise = new Promise((resolve, reject) => {
           if (request.params.name != 'favicon.ico') {
+            var verified = Messages.verifyValidate(request.payload);
+            if (!verified) {
+              resolve(JSON.parse("{ \"error\" : \"Bad request, some fields may be missing from your request\"}"));
+              return;
+            }
             var id = new Id.Validate();
             id.validateMessage(request.payload.address,request.payload.signature, function(response){
               resolve(response);
@@ -160,9 +186,53 @@ const init = async () => {
 };
 
 process.on('unhandledRejection', (err) => {
-
     console.log(err);
     process.exit(1);
 });
+
+
+var Messages = {
+  verifyStarData: function (body) {
+    if (!body) {
+      return false;
+    }
+    if (body.address === "" || !body.address) {
+      return false;
+    }
+    if (body.star === "" || !body.star) {
+      return false;
+    }
+    if (body.star.ra === "" || !body.star.ra) {
+      return false;
+    }
+    if (body.star.dec === "" || !body.star.dec) {
+      return false;
+    }
+    if (body.star.story === "" || !body.star.story) {
+      return false;
+    }
+    return true;
+  },
+  verifyRequestValidation(body) {
+    if (!body || body.address === "" || !body.address) {
+      return false;
+    }
+    return true;
+  },verifyValidate(body) {
+    if (!body) {
+      return false;
+    }
+    if (body.address === "" || !body.address) {
+      return false;
+    }
+    if (body.signature === "" || !body.signature) {
+      return false;
+    }
+    return true;
+  },
+  ascii: function (string) {
+    return /^[\x00-\x7F]*$/.test(string);
+  }
+}
 
 init();

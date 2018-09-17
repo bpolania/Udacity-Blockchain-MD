@@ -34,6 +34,13 @@ class Blockchain{
 		// Initialize the block height in the database
 		var self = this;
 		this.blocks = [];
+		this.getBlockHeight(function(value) {
+			if (value == null) {
+				self.addBlock(new Block("Genesis Block"), function() {
+					
+				});
+			}
+		})
   }
 
 	// returns all the blocks in the blockchain
